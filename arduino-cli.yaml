@@ -1,0 +1,4 @@
+directories:
+  data: .tools/arduino-data
+  downloads: .tools/arduino-downloads
+  user: .tools/arduino-user

@@ -1,0 +1,23 @@
+# Final pre-submission checklist
+
+- [ ] Task 3 is the selected task on the form.
+- [ ] Actual model assembled; no simulated imagery presented as hardware evidence.
+- [ ] Exact pin map followed; all grounds common; servo power separate from USB logic.
+- [ ] Beam truth table verified for the purchased receiver, including emitter-off and unplug tests.
+- [ ] NPN pinout, emitter current limiting and resistor/capacitor polarity checked.
+- [ ] Empty/occupied sonar distributions recorded and separated with margin.
+- [ ] Arm angles, open/closed switches, 500 ms departure and 2.5 s arrival verified.
+- [ ] Swept envelope, minimum vehicle body, lane guides and ≤3 cm/s speed validated.
+- [ ] Normal operation repeated at least 20 times; actual results recorded.
+- [ ] Stopped vehicle, reversal, tailgating, closing obstruction and sensor faults physically tested.
+- [ ] Startup with open, closed and partly lowered arm verified.
+- [ ] Motor supply droop, command latency and mechanical reversal documented.
+- [ ] Jam behaviour described accurately; loss of pulses not called power isolation.
+- [ ] No statement of certified safety, exact vehicle counting or mechanical fail-open behaviour.
+- [ ] Current firmware build and software tests pass after all calibration edits.
+- [ ] Physical CSV rows have results/evidence; unrun cases remain NOT RUN.
+- [ ] Real photographs and 60–90 second demo linked from README.
+- [ ] Repository published; public link works while signed out; no secrets or local tooling uploaded.
+- [ ] README verification status updated to match actual evidence.
+- [ ] Submission paragraph selected for the actual completion stage.
+- [ ] Submission URL is the real project URL and not an assumed future address.

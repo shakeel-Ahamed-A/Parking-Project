@@ -1,0 +1,12 @@
+.tools/
+build/
+dist/
+*.hex
+*.elf
+*.o
+*.exe
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+__pycache__/
