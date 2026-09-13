@@ -1,21 +1,22 @@
-# Debugging guide
+# Troubleshooting
 
-Start with the arm disconnected, a current-limited supply and Serial at 115200 baud. Field meanings and numeric state/fault codes are in the README. `mm` holds the last valid distance; always inspect `v` too.
+Use Serial at 115200; state names print on transitions. Fault codes: 1 SONAR, 2 BEAM_TEST, 3 LIMITS, 4 ACTUATOR. `w=1` is only a long-open advisory. Keep the arm removed for electrical debugging.
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Distance always 0 / `v=0` | TRIG/ECHO swapped, missing 5 V/GND, no echo target, disconnected signal | Verify D4 TRIG / D2 ECHO and common GND; place flat target 24 cm away; inspect pulses if available |
-| Distance very unstable | Soft/sloped/small target, vibration, power noise, side-wall echoes | Flat opaque side panel, rigid perpendicular backboard, local bypass capacitor, separate motor return |
-| Servo jitter | Weak supply, loose ground, rigid stops or switch force | Use separate regulated supply and bulk capacitor; shorten motor wiring; adjust endpoints away from mechanical stops |
-| Uno/ESP32 resets when servo moves | Supply sag or motor return current in logic ground | Separate motor supply, common star ground, measure rail transient; ESP32 is not the supplied build |
-| Opens but never closes | B blocked/inverted, A not confirmed clear, manual held, latched fault | Inspect `a,b,v,f`; check beam truth table, backboard and thresholds; repair fault then acknowledge only as documented |
-| Closes too early | Beam misses body or sits inside/before full arm envelope; undersized/gapped model; wrong sensor placement | Stop demonstration; restore downstream beam, guided opaque body ≥18 cm and validated thresholds; a longer delay cannot fix invisible occupancy |
-| Ultrasonic sensors trigger each other | Additional sonar active nearby | Final design has one sonar; disable nearby units, retain 65 ms cadence; a two-sonar redesign needs sequential triggers |
-| Detection range too short | Near-field limit, narrow/sloped body, sensor occluded by guide | Keep face clear and ≥2 cm from objects; use flat side panel at sensor height; calibrate physical spacing |
-| Servo moves wrong direction | Horn orientation / angle convention | Remove arm, swap and tune OPEN_ANGLE/CLOSED_ANGLE as needed; keep physical OPEN switch on A0 and CLOSED on A1 |
-| Immediate BEAM_TEST fault | Wrong receiver polarity, output short LOW, emitter wired permanently on, ambient IR | Check D5 transistor switching and required LOW/HIGH table; shade sensor; do not disable diagnostic |
-| ACTUATOR fault | Endpoint not reached, broken switch wire, disconnected servo, binding linkage | Isolate servo power, inspect mechanics and feedback; recalibrate then reset; do not increase timeout to hide a jam |
-| LIMITS fault | Both switches pressed/wired LOW simultaneously | Inspect COM/NO wiring and cam geometry; reset only after correction |
-| Fault does not clear with `r` | Lane not clear, endpoint missing, manual pressed or nonrecoverable fault | SONAR/DWELL need clear/open conditions; beam self-test and actuator faults require repair and controller reset |
+| Distance zero / v=0 | TRIG/ECHO swap, no backboard, missing ground/power | D4 TRIG, D2 ECHO; flat target ~24 cm; inspect pulses |
+| Unstable or false-clear distance | Angled/small body, reflection from wall around body, vibration | Use flat opaque side panel; map actual A coverage; fix placement before thresholds |
+| Jitter / reset on movement | Supply sag, poor common ground, excessive load | Independent 5 V supply, local bulk capacitor, separate motor return; inspect rail transients |
+| Opens but will not close | B blocked/inverted, A not confirmed clear, manual held or fault | Inspect a/b/v/f; verify receiver truth table and backboard |
+| Closes too early | Body or protrusion invisible to sensors, wrong B/sweep placement | Stop; repeat geometric coverage test. A longer delay cannot fix invisible occupancy |
+| Sonar interference | Another ultrasonic module nearby | Disable other module; retain 65 ms spacing |
+| Detection range too short | Face obstructed, poor side panel or near-field target | Clear sensor face; ≥2 cm range; flat panel at tested height |
+| Servo direction wrong | Horn/angle convention | Remove arm; calibrate OPEN_ANGLE/CLOSED_ANGLE and physical endpoint labels |
+| BEAM_TEST fault before close | Signal stuck LOW, wrong polarity, permanently powered emitter or slow module response | Verify NPN pinout and switched negative connection; measure emitter-off response; do not bypass test |
+| Actuator fault on reversing | Endpoint mounting/bounce or reversal settling outside measured limits | Inspect raw switch/mechanics, source release and 100 ms dwell; verify T08 rather than increasing deadlines blindly |
+| LIMITS fault | Both switches wired/pressed active | Check COM/NO and cam spacing; inspect then reset |
+| ACTUATOR fault | Jam, disconnected servo, missing target or reached switch lost | Isolate servo supply, inspect and calibrate, then reset |
+| Wait exceeds 30 s | Vehicle waiting or beam unavailable | w=1 is advisory; no r needed. Restore vacancy and normal operation resumes |
+| r ignored | Non-SONAR fault or lane/open endpoint not ready | r only acknowledges repaired SONAR with clear lane, released manual and settled open endpoint |
 
-Never test a jam with fingers. Use a soft restraint only long enough to establish a result, watch current and remove actuator power. Stopping pulses is not an electrical power cut.
+Do not use fingers to stop the arm. No-pulse is not no-power. An ordinary magnetic buzzer is not suitable for the direct piezo circuit.

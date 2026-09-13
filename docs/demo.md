@@ -1,18 +1,21 @@
-# 85-second demonstration
+# 90-second demonstration
 
-Film one continuous wide shot at a slight overhead angle. Keep the entire model body, both sensing planes, barrier and red/green LEDs visible. Place a small printed state legend next to the Uno. A Serial inset can help, but it must not obscure the car or substitute for real movement.
+Use one continuous, slightly overhead shot. Keep the entire model body, A/B labels, barrier and LEDs visible. A laptop behind the model may show Serial state names; do not cut away during an important motion. A faint closing chirp and gradual descent make the obstruction cue visible.
 
-| Time | Action | What must be visible / narration |
+| Time | Action | Visible evidence / expected output |
 |---|---|---|
-| 0–8 s | Title card, then idle prototype | Task 3, project name, closed arm, red LED; briefly identify A and B |
-| 8–20 s | Move the car toward A slowly | A detection, arm opening, open endpoint; wait for green before entering |
-| 20–30 s | Advance front through B | Whole vehicle body and beam mounts; explain that B observes crossing |
-| 30–42 s | Stop with model underneath arm | Keep car still for 12 s; barrier remains raised; explain that a fixed timer cannot override occupation |
-| 42–55 s | Move slowly until trailing edge clears B | Show rear of car beyond the marked beam plane; keep both zones visible |
-| 55–63 s | Wait for closure | Clear interval, red/warning chirps, arm descending, closed endpoint and IDLE |
-| 63–77 s | Second short approach, then retreat before B | Barrier opens; retreat clears A; closure follows verified vacancy without a false crossing claim |
-| 77–85 s | Show repository and brief result note | README, FSM, wiring, actual completed test rows and firmware; state pending tests honestly |
+| 0–8 s | Identify Task 3 and show IDLE | Closed arm, red LED; Serial STATE IDLE |
+| 8–18 s | Move vehicle toward A, ≤3 cm/s | STATE OPENING, arm rises, then green at confirmed endpoint |
+| 18–28 s | Move front through B | STATE PASSING, b=1, seen=1; label that B observes the crossing |
+| 28–43 s | Intentionally stop under arm for 15 s | Arm remains raised, green; whole stationary body and B visible |
+| 43–56 s | Move until trailing edge clears B | Rear beyond marked B; STATE CLEARANCE; no immediate descent |
+| 56–64 s | Let cycle finish | Red/chirps, gradual CLOSING, then IDLE; point out the closed endpoint |
+| 64–77 s | Trigger another approach, then fully retreat | Opening, vacancy, CLEARANCE; no completed-entry claim |
+| 77–86 s | As descent starts, introduce foam model from downstream along B guide | STATE CLOSING → OPENING → PASSING; arm reverses, returns raised/green without fault |
+| 86–90 s | Keep obstruction visible, end with repo URL caption | State stays PASSING; caption references recorded test evidence |
 
-The stopped-under-arm segment is the main safety demonstration; the aborted approach adds an edge case. Record a separate clip of reopening during closure with a foam test block and a separate power-reset clip for repository evidence. Do not place fingers under the moving arm to dramatise safety.
+Rehearse the downstream obstruction with a foam model and guide; do not drop an object vertically or use fingers. The gate intentionally remains open at the end because the obstruction remains. Record the normal post-obstruction clearance return to IDLE in a separate evidence clip if it exceeds 90 seconds.
 
-Capture additional stills: top view with labels, side view of beam height and arm envelope, endpoint cam, power wiring and controller. Add real images to `docs/images/`, then link them in README. A generated render is not evidence of a built prototype.
+Suggested narration: “The first sensor detects approach. The beam detects the vehicle crossing. Stopping under the arm keeps it open. Only verified clearance allows closing. If the beam is interrupted again during descent, it reopens. The switches confirm that the arm actually reached its endpoints.”
+
+Also capture a separate >35 s stopped-vehicle test (showing w=1 and automatic recovery), reset while occupied, and sensor/endpoint fault clips. Do not substitute host-test output for physical evidence or claim timing from the four-Hz Serial stream.

@@ -1,48 +1,36 @@
-# Verification plan and evidence
+# Physical acceptance tests
 
-**Physical status: NOT RUN.** The software report is in [validation.md](validation.md). Simulation does not measure sensor coverage, power integrity, pulse timing on real silicon, mechanical impact or real servo feedback.
+**All physical results are NOT RUN.** Software verification is recorded separately in [validation.md](validation.md). These 14 tests replace the earlier 25-case list; they concentrate on build failures that simulated IO cannot settle.
 
-Record each physical result in [test-results.csv](test-results.csv). Use PASS / FAIL only after observing the pass criteria; attach log/video names and measured values. Default state sequences below start after BOOT unless reset is the scenario. OPENING/OPEN may be brief depending on sensor timing.
+Use the actual guided opaque body ≥20 cm long, speed ≤3 cm/s, a light breakaway arm and the documented geometry. Record procedure variations, actual outcomes, measurements and evidence in [test-results.csv](test-results.csv). Any unexpected contact is a failure; investigate before filming a success-only demonstration.
 
-| ID | Input/scenario | Expected state sequence | Barrier behaviour | Pass criteria |
-|---|---|---|---|---|
-| T01 | Normal vehicle arrival | IDLE → OPENING → OPEN | Opens; green only at endpoint | Three occupied A readings trigger; open switch confirmed within 2.5 s |
-| T02 | Vehicle approaches and stops before arm | IDLE → OPENING → OPEN | Remains open | No closing while A occupied; after 30 s FAULT/open |
-| T03 | Vehicle crosses normally | OPEN → PASSING → CLEARANCE → CLOSING → IDLE | Closes only after trailing edge clears B and A clears | Fresh 1.2 s clear interval; closed switch confirmed; `p=1` for valid geometry |
-| T04 | Very slow vehicle | OPEN → PASSING → CLEARANCE → CLOSING → IDLE | Stays open throughout crossing | Pause 5 s at A/B and 5 s at B; no premature close |
-| T05 | Vehicle stops underneath arm | OPEN → PASSING; after deadline FAULT | Holds open | B stays blocked; no downward command even after 30 s |
-| T06 | Isolated false/noisy A samples | IDLE | Stays closed | One/two occupied readings followed by clear do not trigger; do not count continuous noise as isolated |
-| T07 | B triggers before A / false B pulse | IDLE → OPENING → PASSING/OPEN → CLEARANCE → CLOSING → IDLE | Conservative open, then revalidate clear | No deadlock; no fabricated forward evidence from B-only activation |
-| T08 | Vehicle reverses before passing | OPEN → PASSING → CLEARANCE → CLOSING → IDLE | Stays open until both zones empty | Clear B first while A occupied does not close; completed retreat recovers |
-| T09 | Second vehicle follows first | PASSING → CLEARANCE → PASSING/OPEN, then normal close | Holds open or reopens for second car | Gap <1.2 s cannot finish clearance; no exact count claim |
-| T10 | Disconnect sonar Echo/power | Any → FAULT | Requests open | Latest invalid reading vetoes closing; 3 bad samples or ≥300 ms stale latches SONAR |
-| T11 | Controller reset with arm open / partially down / closed | BOOT → OPEN/PASSING → CLEARANCE → CLOSING → IDLE | First command opens | Test all three initial positions; occupied lane never causes automatic close |
-| T12 | Rapid repeated beam triggers | OPEN/PASSING, timer repeatedly cancelled | Holds open | 10 ms blocked/clear pulses do not produce a completed-clear interval |
-| T13 | New object during closing | CLOSING → OPENING → PASSING/OPEN | Reverses command to open | Measure beam-to-command and mechanical reverse latency; foam block never contacted within permitted geometry/speed |
-| T14 | Unplug IR receiver / emitter wire | IDLE → OPENING → PASSING → FAULT | Holds open | D3 pulled HIGH; DWELL after 30 s, not automatic closure |
-| T15 | Test D3 shorted LOW | Any → FAULT | Requests open | Emitter-off diagnostic catches fault by next test, nominally <260 ms plus measured loop latency |
-| T16 | Jam opening/closing using soft restraint, current-limited supply | OPENING/CLOSING → FAULT | Stops command pulses, does not retry | Source-release timeout 500 ms or target timeout 2.5 s; isolate servo immediately, do not sustain stall |
-| T17 | Both endpoint switches active | Any → FAULT | Stops pulses | Contradiction latched after debounce; `r` cannot reattach |
-| T18 | Press manual during IDLE/closing; hold 35 s | OPENING → OPEN/PASSING | Holds open with no dwell fault while pressed | Release permits only fresh clearance; cannot override actuator fault |
-| T19 | Approach then retreat without reaching B | OPEN → CLEARANCE → CLOSING → IDLE | Closes after verified vacancy | Recovers with no crossing recorded |
-| T20 | Ranging inside hysteresis band | OPEN/PASSING | Holds previous occupied state | 160–200 mm does not create confirmed clearance |
-| T21 | Supply sag / restart | Fault or BOOT recovery, depending on supply | No intentional startup-close command | Measure 5 V rails during motion; no resets with chosen supply under normal load |
-| T22 | Broken endpoint wire / lost endpoint after arrival | Moving/IDLE/OPEN → FAULT | Stops pulses | Target missing → 2.5 s deadline; reported endpoint lost at rest → fault after debounce |
-| T23 | Minimum vehicle size, maximum permitted speed, lane extremes | Normal cycle / safe open fault if sensing fails | Never closes on permitted model | Test 18 cm opaque body at ≤3 cm/s throughout guided lateral positions; any contact is FAIL |
-| T24 | Recoverable fault repaired | FAULT → OPEN → CLEARANCE → CLOSING → IDLE | Remains open until explicit acknowledgement | SONAR/DWELL: clear lane + open endpoint + `r`; BEAM_TEST/jam requires inspection and reset |
-| T25 | Logic power/servo power removed separately | No guarantee while unpowered; BOOT on restore | Observe actual passive mechanics | Document sag/fall, servo loss-of-pulse response and initial pulse behaviour; do not claim mechanical fail-open |
+| ID | Setup | Action | Expected state sequence | Expected physical behaviour | Pass criteria | Result |
+|---|---|---|---|---|---|---|
+| T01 Power/unloaded motion | Arm removed; separate 5 V servo supply | Measure rails and run unloaded movements | BOOT → OPEN → CLEARANCE → CLOSING → IDLE | No reset, binding or hard-stop stall | Rails within actual specifications; source releases <500 ms; settled endpoint by 2.5 s; scope transients or mark unmeasured | NOT RUN |
+| T02 Beam polarity/diagnostic | Arm removed; correct receiver/driver | Check illuminated, blocked, unplugged; then removable D3-to-GND short before close | OPEN → CLEARANCE → FAULT (BEAM_TEST) | Shorted input never authorizes CLOSE | Required truth table; diagnostic only raised; repair/reset required; never short an output | NOT RUN |
+| T03 Coverage | Actual opaque body, guides/backboard installed | Map A/B and entire sweep at lane extremes; collect ≥30 samples each empty/occupied | IDLE → OPENING → OPEN/PASSING; remains raised on occupancy | No body in sweep invisible to both sensors | Guaranteed A section [−14,−10], B [+1.5,+2.5], sweep ±0.5 cm; separated range distributions | NOT RUN |
+| T04 Normal crossing | Calibrated complete model | Perform 20 full passages | IDLE → OPENING → OPEN/PASSING → CLEARANCE → CLOSING → IDLE | Rear clears before closure; return closed | 20/20 without contact or unexplained faults; retain all failed attempts in record | NOT RUN |
+| T05 Stops/long stop | One run at A, another underneath arm/B | Hold each 35 s then continue | OPEN or PASSING holds; w=1; CLEARANCE → CLOSING → IDLE | No descent while occupied; normal recovery | Both runs recover without r/reset; no wait-induced fault | NOT RUN |
+| T06 Slow/retreat | Guided body at crawl speed | Crawl/pause; retreat before B, then repeat after touching B | OPEN/PASSING → CLEARANCE → CLOSING → IDLE only when vacant | No contact or deadlock | Five runs of each; no direction/count claim | NOT RUN |
+| T07 Tailgating | Two permitted bodies | Follow immediately; vary gap before and during descent | PASSING holds; CLEARANCE → OPEN/PASSING; CLOSING → OPENING if late | Hold or reopen for follower | Five runs without contact, speed ≤3 cm/s | NOT RUN |
+| T08 Closing obstruction | Soft body downstream; camera/analyser | Interrupt B during early/middle/late descent, then withdraw during reopening | CLOSING → OPENING → OPEN/PASSING → CLEARANCE → CLOSING → IDLE | Reversal completes even if obstruction disappears | ≥5 runs, no nuisance fault/contact; B interruption to stopped downward motion ≤200 ms measured | NOT RUN |
+| T09 Approach noise/loss | Final firmware, arm visible | Move reflector near thresholds; one missed Echo then disconnect during descent | IDLE rejects isolated near noise; CLOSING → OPENING; persistent loss → FAULT (SONAR) | Uncertainty vetoes descent | No false close; repair/clear/confirmed open plus r restores operation; capture log | NOT RUN |
+| T10 Beam chatter/loss | Body blocks B; then empty lane | Brief false-clear pulse/chatter; unplug for 35 s; restore | PASSING holds, or CLEARANCE cancels; stable vacancy → CLEARANCE → CLOSING → IDLE | No closure on short clear pulse or unplug | <100 ms false clear never accepted; all renewed occupancy restarts clearance; normal restoration needs no reset | NOT RUN |
+| T11 Endpoints/jam | Current-limited supply; soft restraint; arm light | Briefly prevent departure/midtravel; disconnect each target separately; activate both switches | OPENING/CLOSING → FAULT (ACTUATOR); contradictory → FAULT (LIMITS) | Pulses stop and remain latched | 500 ms departure / 2.5 s arrival limits; no auto reattach; isolate motor immediately; record passive arm behaviour | NOT RUN |
+| T12 Reset/supply disturbance | Safe unloaded/paper-arm setup first | Reset closed/open/mid/blocked; remove servo supply and logic supply separately | BOOT commands OPEN; blocked → PASSING; missing torque → FAULT (ACTUATOR) | No firmware startup CLOSE; no guaranteed motion without power | Record actual startup pulse/arm behaviour and rail dips; no normal-load reset; never claim mechanical fail-open | NOT RUN |
+| T13 Manual/new approach | Idle then descent | Press hold, release occupied then empty; new A hazard during descent | IDLE/CLOSING → OPENING → OPEN/PASSING → CLEARANCE → CLOSING → IDLE | Immediate open demand, no forced close | Five runs; latest near reading vetoes descent before three confirmations; button cannot override STOP latch | NOT RUN |
+| T14 Final assembly | All mounts/wiring secured, actual demo lighting | Repeat normal, stop, reopen and reset at lane limits/max speed | Same sequences as T04/T05/T08/T12 | No regression after remounting | Final 20 normal cycles plus five reopen runs; evidence tied to firmware commit | NOT RUN |
 
-## Repeatability and measurement
+## Measurement method
 
-- Run T01/T03 at least 20 times, logging actual completion count and any failures.
-- Repeat T05/T08/T09/T13/T23 at least five times with the permitted model.
-- For T13 use a logic analyser on D3, D5 and D9 if available; separately film arm reversal at high frame rate. Serial is sampled at 4 Hz and cannot prove millisecond response.
-- Measure worst-case loop service delay with a spare debug pin or temporary scope instrumentation if available. The 6 ms beam-test blindness figure excludes loop and physical actuator delay.
-- Add independent physical setup/reset evidence; the host tests use simulated endpoint motion and do not validate real servo timing.
-- Exercise `millis()` and `micros()` rollover in the included software tests rather than waiting 49 days. Do not modify production timing to fabricate bench results.
+- For T08 a logic analyser on D3/D9 shows sensor and command timing; high-frame-rate video must additionally show when the arm stops descending. Serial at 4 Hz cannot establish a 200 ms mechanical response reliably.
+- For T01 use a scope near servo and Uno supply pins for transients. A multimeter alone may miss short brownouts. Record the instrument and its limits rather than asserting a measured margin.
+- For T03 the effective A section is a tested coverage property, not the module's printed cone angle. A valid empty-wall echo with a vehicle present is more dangerous than an invalid echo.
+- T02 does not prove the receiver cannot falsely clear after the diagnostic. The project remains single-channel and supervised.
+- Use T11 only briefly, with soft restraint and current limiting. A servo may continue applying torque after pulses stop; removing its supply is the isolating action.
 
-## Host test method
+## Software suite scope
 
-`tests/firmware_tests.cpp` includes the actual `.ino`, substitutes GPIO/Servo/clock interfaces and feeds sensor scenarios. Each named scenario starts in a fresh process. Normal motion is simulated as 600 ms travel with 50 ms departure; these are **test fixture values**, not measured hardware specifications. Most tests inject sonar samples at the filtering boundary; dedicated cases cover Echo interrupt conversion, timeout and wraparound. Every simulated tick asserts that CLOSING implies all clear and that a stopped actuator never reattaches.
+The host harness includes the production .ino, substitutes clock/GPIO/Servo interfaces, and runs each scenario in a fresh process. Most sonar tests inject readings at the filter boundary; dedicated Echo cases check interrupt timestamps, deadline, stale completion and rollover. It exercises the production closing-ramp function, while endpoint motion is a synthetic fixture. It does not emulate motor inertia, optical coverage, supply sag, a bootloader or AVR interrupt load.
 
-The tests cover control behaviour; they do not emulate AVR interrupts, electrical faults exhaustively, ultrasonic propagation, radiation, a bootloader, brownout or servo inertia. CI also compiles against the real AVR core and Servo library.
+The original five failing scenarios were reproduced before fixes. The maintained suite now contains 46 scenarios including continuous wait recovery, no beam blanking during descent, stale endpoint reversal, source coasting, late/buffered Echo, fresh post-test clearance, latest-near veto and stepped closing. See the machine-captured [software results](software-results.txt). Test execution has a per-case process timeout; a hang fails the run.

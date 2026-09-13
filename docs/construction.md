@@ -1,49 +1,36 @@
-# Physical construction and bring-up
+# Build in phases A–L
 
-## Desk model
+Use [exact wiring](wiring.md) and [geometry](geometry.md). Advance only after the listed check is satisfied. Keep the arm removed during electrical work. Phase G is the integrated power stress check: **the correct external servo supply and common ground are already mandatory in phase B**.
 
-Use a 65 × 30 cm base with a 14 cm wide, straight, guided lane. Label entry, zone A, barrier, zone B and exit. Use dark road card, thin white lane markings and a white arm with red stripes. Hide wire runs beneath the base and mount the controller on standoffs beside the lane. Use removable sensor brackets until calibration is complete.
+| Phase | Work | Verify before proceeding |
+|---|---|---|
+| A Controller + Serial | Upload final Uno sketch; open 115200 baud Serial; identify actual part pinouts | STATE/telemetry appear; missing hardware faults are expected and not integrated passes |
+| B Servo only | Build separate servo supply, common ground and capacitors; unloaded bounded Sweep bench sketch | Direction, usable angles, stable rails, no binding; restore final firmware afterwards |
+| C Endpoint switches | Fit adjustable cams; COM/GND, NO/A0 or A1; inspect by meter | Only correct endpoint pressed; neither in transit; low-force mounting, no rigid hard-stop use |
+| D HC-SR04 | Wire D4/D2 and backboard; final sketch telemetry with motor isolated | ≥30 occupied/empty readings each, nonoverlapping margins; timeout is unknown, not clear |
+| E IR beam | Wire D3 pull-up and D5 driver; verify receiver interface | Illuminated LOW, blocked/off/unplugged HIGH; suitable 10 ms optical settling |
+| F Integrate FSM | Final firmware, paper pointer, all sensors/switches | Boot opens; normal cycle returns IDLE; source <500 ms, target settled ≤2.5 s; diagnostic only raised |
+| G Power system | Check integrated movements and transient rails with sensor/logic loads | No normal-load resets; separate positive rails, common ground; scope or explicitly unmeasured transients |
+| H Mechanical gate | Build base/guides, attach light breakaway arm; preserve adjustable mounts | Full sweep ±0.5 cm; switches observe actual linkage; no binding or uncovered permitted model |
+| I Calibration | Measure A/B coverage, adjust angles/thresholds, measure reversal | Geometry length inequality and ≤200 ms downward stopping target hold at ≤3 cm/s |
+| J Physical tests | Complete T01–T14, record failures/retests | Real dated results and measurement limitations; do not infer PASS from software |
+| K Evidence | Secure wiring, repeat acceptance, rehearse/film uncut demo | Actual images/logs/video correspond to final firmware and demonstrate stop/reopen |
+| L GitHub publication | Review diff/ZIP, publish only when ready, verify public links | Accessible repo/video, remote CI result, honest status and submission paragraph |
 
-Coordinates: x runs along vehicle travel; the arm centre is x = 0. Place the approach sensor plane at x = −12 cm and the beam at x = +1 cm. Lane guides constrain vehicles laterally. Put the sonar perpendicular to the lane at about 2.5 cm above the road; the opposing flat backboard is 24 cm from the sensor face. Centre the 7 cm wide model body about 12 cm from that face, giving an occupied return near 8.5 cm. Keep both transducers unobstructed; do not mount them behind the roadside guide.
+## Detailed bench procedure
 
-```text
-TOP VIEW — travel left to right
+1. **Inspect components.** Identify the actual transistor pinout, receiver truth table, switch COM/NO terminals and servo wire functions. Verify a positional servo, not a continuous-rotation unit. Check that the emitter module already limits LED current.
+2. **Build power distribution on a breadboard.** USB powers Uno/logic sensors. A regulated 5 V, 2 A supply powers the servo through an isolator. Connect grounds at one point; leave positive rails separate. Add 470–1000 µF at the servo connector and 100 nF at sensor supplies. Keep motor current off the breadboard logic return. Measure the two rails before inserting modules.
+3. **Servo-only check, no horn/arm load.** Temporarily use the Servo library's bundled Sweep example. Restrict both sweep loops to the intended 10°–95° range; start smaller if the servo binds. Its example delay is only a bench procedure, not the final controller. Confirm direction and repeatability from the independent supply. Isolate power to fit a paper pointer; never force a powered shaft. Record usable angles and avoid hard stops. Replace this temporary sketch with the final firmware before integration.
+4. **Fit endpoint cams on an adjustable bracket.** With power isolated, position the horn/linkage and inspect which switch closes at each intended end. COM → GND; open NO → A0, closed NO → A1. Neither should press in the middle; both must never press together. Use a meter in continuity mode. A switch must observe the actual arm linkage, not an unrelated loose horn. Avoid using a rigid switch as the mechanical stop.
+5. **Install final firmware and verify endpoint motion with a paper pointer.** Set the calibrated OPEN/CLOSED angles. On boot it requests OPEN. After clearance it steps closed. Confirm the source releases within 500 ms and each target completes its 100 ms settling within 2.5 s. Calibration errors may deliberately latch a fault: isolate servo power, adjust, then reset. Do not mask a switch input to make the test pass.
+6. **Sonar-only sensing check.** Keep the arm removed and motor isolated if necessary. Final firmware continues telemetry after an actuator fault, so range acquisition can be inspected independently. Place the perpendicular backboard 24 cm from the sonar face. Collect at least 30 empty and 30 occupied samples from the actual opaque side panel. Record range distributions and invalid counts. Empty readings must be consistently ≥200 and ≤350 mm; occupied readings must be ≤160 and ≥20 mm. Correct geometry if distributions overlap. Do not interpret invalid returns as clear.
+7. **IR-only check.** Wire receiver pull-up and emitter driver. Final firmware keeps D5 HIGH outside the pre-close diagnostic. Verify D3 LOW with an aligned, illuminated receiver, HIGH with the model blocking it, and HIGH with receiver signal disconnected. For a long emitter-off check, isolate logic power before disconnecting the emitter positive lead, then restore logic and check HIGH; restore wiring with power off. Never short an output pin to ground. The pre-close test later verifies transistor switching automatically.
+8. **Build and map the lane.** Use a 65 × 30 cm base, 14 cm guides, A at −12 cm, B at +2 cm and arm sweep within ±0.5 cm. Use a 20 × 7 × 5 cm opaque model, no gaps at 2.5 cm sensing height. Verify a guaranteed A section within [−14,−10] and B position within [+1.5,+2.5] across every permitted lateral position. Label x=0 and both sensor locations on the base. Follow the coverage test in geometry.md.
+9. **Complete integration with the light arm.** Use a foam/straw arm 14–16 cm long, preferably below 5 g, pivot ~4 cm above road, with a breakaway attachment. Recheck the complete swept envelope and that the model interrupts B. A 5 g uniform 15 cm arm has about 0.0375 kg·cm static gravity moment before switch force/friction; do not treat advertised stall torque as a continuous design rating.
+10. **Verify the raised pre-close diagnostic.** Run an empty cycle. With a logic analyser, check D5 LOW for ≥10 ms only while raised, then HIGH before real clearance timing. Without an analyser, use the acceptance stuck-LOW test to verify the logical failure path, and mark pulse timing unmeasured. The transistor must not be bypassed to suppress a fault.
+11. **Run the 14 acceptance tests.** Start at very low speed with foam objects. Measure downward stopping/reversal latency and supply behaviour. Use a soft restraint briefly for a jam test with current limiting; isolate motor power immediately afterwards. Never use fingers. Record real outcomes in test-results.csv.
+12. **Finish the base and wiring.** Only after repeatable runs, secure the adjustable brackets, mount Uno on standoffs, strain-relieve cables, move vulnerable junctions to perfboard/terminals and hide wires beneath the base. Keep a removable access panel. Use lane arrows, clear A/B labels and a red-striped arm. Repeat normal, stopped-body, reopen and reset tests after remounting.
+13. **Rehearse and film.** Move the model ≤3 cm/s, wait for green, and rehearse the descending-obstruction cue until repeatable. Keep the whole body, arm and LEDs visible. Capture acceptance evidence before polishing the video.
 
-             x=-12 cm                x=0   x=+1 cm
-             sonar A                 arm   IR beam B
-                 ↓                     │     ↓ TX
- ENTRY  ═══════════════════════════════│═════┆══════════ EXIT
-        [18 cm opaque model body]  →   │     ┆
-        ═══════════════════════════════│═════┆══════════
-                 ▬ flat backboard            RX
-                 24 cm from sonar
-
- A and B separation = 13 cm; permitted body length ≥18 cm.
- Beam B is just beyond the arm's downstream swept edge.
-```
-
-Use an 18 × 7 × 5 cm opaque foam/cardboard model car with uninterrupted side panels at sensor height. Wheels can be bottle caps; avoid cutouts across the beam height. A tiny die-cast car is not automatically suitable: make an opaque body sleeve or adjust and revalidate the geometry. Move at ≤3 cm/s and wait for green before entering the arm area.
-
-Mount the servo pivot approximately 4 cm above the road. Build a 14–16 cm foam-board or drinking-straw arm, preferably under 5 g. Use a breakaway paper/tape coupling. The arm rotates upward in a vertical plane across the road; keep its thickness along x below 1 cm. Place the IR beam at approximately 2.5 cm high and x=+1 cm, downstream of the entire swept envelope. Confirm that the car blocks B whenever any permitted part could contact the descending arm.
-
-Fit an adjustable cam to the arm pivot to press the open switch only at the raised endpoint and the closed switch only at the lowered endpoint. The switches must sense the arm linkage, not a loose servo horn independently of the arm. Use low-force levers; avoid making the servo push hard against a switch or rigid stop. Calibrate the target angles and switch positions together. Defaults 10°/95° are starting values, not guaranteed mechanics.
-
-For scale: a 5 g uniform 15 cm arm has approximately 0.0375 kg·cm static gravity moment about one end, excluding coupling, friction and switch force. This is a sizing estimate; measure movement and current on the actual assembly. Do not substitute a heavy wooden arm just because a servo's advertised stall torque looks large.
-
-## Bring-up sequence
-
-1. Photograph and label parts. Verify supply voltage and transistor pinout before connecting power. Keep the arm disconnected.
-2. Build logic wiring and common ground. Check resistance between +5 V and ground with power off. Keep external servo +5 V separate from USB logic +5 V.
-3. Upload the final sketch with the servo isolated. Actuator faults are expected until endpoint feedback works; do not bypass the switches to make the final system appear operational.
-4. Verify beam polarity using a meter: illuminated LOW, blocked HIGH, emitter off HIGH. A scope/logic analyser will reveal short emitter-test pulses. Avoid prolonged test jumpers; power off before changing wiring.
-5. Calibrate A with the backboard and actual vehicle. Record 30 empty and 30 occupied readings from Serial. Empty readings should be stably ≥200 mm and below 350 mm; occupied readings should be ≤160 mm and ≥20 mm. If distributions overlap, fix placement/target geometry before changing thresholds.
-6. Connect the unloaded servo to its independent supply. Check startup commands opening. Fit and calibrate endpoint cams with the arm absent or replaced by a paper pointer; reset after expected calibration faults. Confirm target reached within 2.5 s and source switch released within 500 ms.
-7. Attach the light arm, verify the envelope, and test slowly with a foam block. Check that no arm position catches wiring, beam mounts or fingers.
-8. Perform T01–T25 in testing.md. Capture power droop, closing-to-opening response and representative Serial logs. Do not mark a test passed without observation.
-9. Secure the wiring and brackets only after repeatable runs. Repeat the core normal/obstruction/reset tests after moving from breadboard to perfboard.
-
-## Sensor reliability
-
-Only one ultrasonic module is installed, so there is no two-sonar cross-talk. Do not run another ultrasonic demo beside it. A 65 ms ping interval is above the datasheet's recommended 60 ms spacing. Use a rigid backboard perpendicular to the acoustic axis and minimise other reflecting surfaces. A soft, angled or narrow model may miss echoes; add a flat side panel at the measured height. Never translate no echo into free space.
-
-Shade the IR receiver from direct sunlight and use short opaque collars without reducing the vehicle coverage plane. The emitter-off diagnostic is useful against a stuck-clear signal and strong illumination that holds the output low, but it is not a substitute for optical testing under the actual room lighting.
+The Uno may enter an expected actuator fault during sensor-only work because the servo is intentionally isolated. This does not prevent ongoing sensor telemetry. It must not be described as a passed integrated test. Never leave the temporary Servo example installed for a demonstration.

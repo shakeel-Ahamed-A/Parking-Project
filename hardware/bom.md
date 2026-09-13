@@ -9,7 +9,7 @@ No exact local prices are claimed. Reuse the Uno, sonar, LEDs, jumpers and piezo
 | IR emitter + receiver pair | 1 pair | Crossing and trailing-edge clearance | 5 V IR through-beam pair; receiver open-collector, LOW when illuminated, HIGH when blocked; e.g. verify Adafruit 2168 | Matching through-beam module with this truth table; reflective IR module is not equivalent |
 | Positional servo | 1 | Raise lightweight arm | MG90S, 5 V, standard positional | Kit SG90 for foam arm; do not use continuous-rotation servo |
 | Lever microswitch | 2 | Actual open/closed endpoints | SPDT lever switch, use COM and NO | Low-force lever switches with adjustable mounts |
-| NPN transistor | 1 | Switch IR emitter ground | PN2222A/2N2222A; verify exact package pinout | BC547 for emitter current within its rating; pinout differs |
+| NPN transistor | 1 | Pre-close check: switch IR emitter ground | PN2222A/2N2222A; verify exact package pinout | BC547 for emitter current within its rating; pinout differs |
 | Base resistor | 1 | Limit NPN base current | 1 kΩ, 1/4 W | 820 Ω–1.5 kΩ after current check |
 | Base pull-down | 1 | Emitter off while controller resets | 10 kΩ | 10–47 kΩ |
 | Beam pull-up | 1 | Defined blocked/unplugged HIGH | 10 kΩ | 4.7–10 kΩ |
@@ -18,7 +18,7 @@ No exact local prices are claimed. Reuse the Uno, sonar, LEDs, jumpers and piezo
 | LEDs | 2 | Red stop/fault, green open | Red and green 3/5 mm | Kit LEDs |
 | LED resistors | 2 | LED current limiting | 330 Ω, 1/4 W | 220–470 Ω, confirm LED current |
 | Passive piezo | 1 | Audible closing/fault status | Low-current bare piezo transducer | Omit physically if unavailable; no firmware change needed |
-| Piezo resistor | 1 | Limit transient GPIO current | 100 Ω | 100–220 Ω |
+| Piezo resistor | 1 | Limit transient GPIO current | 330 Ω | 330–470 Ω |
 | Momentary pushbutton | 1 | Hold-open request | Normally open tactile switch | Any dry-contact momentary NO button |
 | Servo power supply | 1 | Handle motor current separately | Regulated 5 V, 2 A supply from reputable source | Current-limited bench supply set to 5 V; verify actual servo peak/stall demand |
 | Servo isolator | 1 | Remove actuator power for setup/jam | Inline switch rated for supply current | Bench supply output switch; not a certified E-stop |

@@ -1,11 +1,11 @@
-# Submission wording
+# Form submission
 
-Use the first paragraph **now**, before building. Use the second only after the physical prototype has been built and the claimed behaviour demonstrated. Add the actual public GitHub URL above the selected paragraph; do not submit an uncreated URL.
+Place the **actual accessible repository URL** above the paragraph. Publication and physical evidence are pending; do not substitute an assumed URL.
 
-## Current truthful description (89 words)
+## Current evidence-qualified version
 
-This repository contains the complete design and firmware for a two-zone smart parking barrier using an Arduino Uno, an ultrasonic approach sensor and an infrared crossing beam. An enum-based state machine controls opening, passage monitoring, clearance verification and closing. Closure requires both zones to remain clear; renewed obstruction or uncertain sensing during closure requests reopening. Endpoint switches verify arm movement, while sensor confirmation, hysteresis, beam self-testing and latched faults address common failure cases. The firmware has been compile-checked and software-tested. Physical construction, calibration and demonstration results are still pending.
+This project implements a two-zone smart parking barrier using an Arduino Uno, ultrasonic approach sensing and an infrared crossing beam. An enum-based state machine opens the arm, monitors occupation and closes only after a fresh clearance interval. New obstruction or uncertain sensing during descent requests reopening. Endpoint switches supervise movement, while filtered readings, hysteresis, a raised-position beam diagnostic and bounded fault handling improve reliability. The repository contains the firmware, wiring, build procedure, software regressions and physical acceptance plan. The Uno build and software tests pass; physical assembly, calibration and demonstration evidence are still pending.
 
-## After physical verification (103 words)
+## Use only after the physical claims are evidenced
 
-I built a tabletop smart parking barrier using an Arduino Uno, an ultrasonic approach sensor and an infrared beam at the crossing. An enum-based state machine detects an approaching vehicle, opens the arm, monitors passage and closes only after both sensing zones remain clear. If an obstruction reappears during closing, the controller requests reopening. The prototype includes confirmed sensor readings, hysteresis, non-blocking timing, beam self-testing, endpoint switches, traffic LEDs and latched fault handling. The repository includes firmware, wiring, construction notes, software checks and recorded physical tests. The demonstration shows normal passage, a vehicle stopping beneath the arm and recovery from an abandoned approach.
+I built a tabletop smart parking barrier using an Arduino Uno, an ultrasonic approach sensor and an infrared crossing beam. A non-blocking state machine opens the arm, holds it while a vehicle occupies the crossing and closes after verified clearance. Obstruction during gradual descent requests reopening. Endpoint switches confirm movement, and filtered sensing, hysteresis, a raised-position beam diagnostic and bounded faults address common failures. The repository includes firmware, wiring, software checks and recorded physical acceptance results. The demonstration shows normal passage, a vehicle intentionally stopped beneath the arm and successful reopening when the crossing is obstructed during closing.

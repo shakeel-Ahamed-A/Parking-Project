@@ -20,7 +20,7 @@ All signal names match the final sketch. Switches use `INPUT_PULLUP`: COM to gro
 | External supply GND | Servo ground, usually brown/black, AND Uno GND |
 | D6 → 330 Ω | Red LED anode; cathode → GND |
 | D7 → 330 Ω | Green LED anode; cathode → GND |
-| D8 → 100 Ω | Passive piezo positive; other terminal → GND |
+| D8 → 330 Ω | Passive piezo positive; other terminal → GND |
 | A0 | OPEN endpoint switch NO; COM → GND |
 | A1 | CLOSED endpoint switch NO; COM → GND |
 | A2 | Hold-open button; other contact → GND |
@@ -52,7 +52,7 @@ Add 470–1000 µF across the external servo +5V/GND close to its connector, obs
 
  D6 ──330Ω──>| RED ── GND       A0 ── OPEN switch NO; COM ── GND
  D7 ──330Ω──>| GREEN ─ GND      A1 ── CLOSED switch NO; COM ─ GND
- D8 ──100Ω── PIEZO ─── GND      A2 ── hold-open pushbutton ─ GND
+ D8 ──330Ω── PIEZO ─── GND      A2 ── hold-open pushbutton ─ GND
 
                              D9 ──────+────── SERVO signal
                                       10k
@@ -89,3 +89,21 @@ With the arm removed, measure D3 relative to GND:
 | Receiver signal disconnected from D3 | HIGH due to pull-up |
 
 Do not reverse a constant merely to suppress a fault. An inverted receiver needs a deliberately redesigned diagnostic circuit and tests. The current final firmware assumes this exact table.
+
+The 330 Ω piezo resistor limits the nominal 5 V edge current to about 15 mA before output resistance. The emitter diagnostic now runs only while raised, before each closing attempt: 10 ms off, 10 ms settling, restored clear confirmation, then a new 1.2 s vacancy interval. It never intentionally blanks the beam during descent.
+
+
+## Receiver variants: identify the actual part before wiring
+
+The table and drawing above describe a powered receiver module. All alternatives must meet the same truth table; firmware polarity is not configurable.
+
+| Actual receiver | Interface to this design | Required checks |
+|---|---|---|
+| Recommended 5 V through-beam digital module with open-collector output | VCC → Uno 5V, GND → common GND, OUT → D3; external 10 kΩ D3 → Uno 5V | Illuminated LOW; blocked/off/disconnected HIGH. Verify both optical transitions settle within the 10 ms diagnostic phase under demo lighting |
+| Bare phototransistor | Collector → D3, emitter → GND, 10 kΩ D3 → Uno 5V; **no separate VCC terminal** | Identify actual C/E pins. Illumination must pull below the Uno LOW threshold and darkness release above HIGH. Ambient light/saturation can defeat this; not the preferred substitute without measured margins |
+| Comparator module | VCC/GND as its datasheet permits; DO → D3 only if output is 5 V compatible and meets the required truth table; use external pull-up for open-collector DO | AO is not DO. Verify threshold, sunlight immunity, propagation/settling, and emitter-off HIGH. Many reflective obstacle modules are not through-beam receivers |
+| Push-pull or demodulating digital module | Not an assumed drop-in replacement | Verify voltage, polarity and response to this continuous emitter. Some receivers require a modulated carrier; inverted outputs need an interface redesign and renewed tests |
+
+A bare IR LED needs a series resistor chosen from `R=(5 V−Vf−VCEsat)/I_LED`, with current and resistor power checked against its datasheet. Do not apply the module circuit without that resistor. Use a current-limited emitter drawing no more than the selected transistor can reliably switch with approximately 4.3 mA base drive; verify collector voltage when on. Transistor pin order is part-specific.
+
+The **330 Ω** series resistor is suitable for a small passive piezo: nominal edge current is bounded near 5/330 = 15.2 mA before GPIO output resistance, below the Uno's published 20 mA per-pin specification. It is not a current budget for an active/magnetic buzzer. LED currents with 330 Ω are lower because of their forward voltage. D2 uses INT0, Servo uses Timer1, `tone()` Timer2 and `millis()` Timer0; LEDs use digital outputs, so PWM timer sharing is irrelevant. See the primary component/source links in [the review](review.md).
